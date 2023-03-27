@@ -16,6 +16,9 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm}"
 
+  s.vendored_libraries = "ios/libs/sewoo/libPrinter_188b.a"
+  s.public_header_files = ['ios/libs/sewoo/usr/local/include*.{h,m,mm}']
+
   s.dependency "React-Core"
 
   # Don't install the dependencies when we run `pod install` in the old architecture.
