@@ -20,7 +20,7 @@ RCT_REMAP_METHOD(connect,
     @try
     {
         long ret;
-        
+        zplPrinter = [[ZPLPrinter alloc] init];
         ret = [zplPrinter openPort:@"bluetooth", withPortParam:0];
         
         if(ret >= 0)
