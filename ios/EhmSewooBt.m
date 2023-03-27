@@ -8,12 +8,12 @@
     ZPLPrinter *zplPrinter;
 }
 
-RCT_EXPORT_MODULE()
+RCT_EXPORT_MODULE();
 
 
-int iInterface = 0;
 
-RCT_EXPORT_METHOD(connect:(RCTPromiseResolveBlock)resolve
+RCT_REMAP_METHOD(connect,
+                  withResolver:(RCTPromiseResolveBlock)resolve
                   rejecter:(RCTPromiseRejectBlock)reject)
 {
     
@@ -22,7 +22,7 @@ RCT_EXPORT_METHOD(connect:(RCTPromiseResolveBlock)resolve
         long ret;
         
         ret = [zplPrinter openPort:@"bluetooth", withPortParam:0];
-
+        
         if(ret >= 0)
         {
             resolve(@(YES));
@@ -40,31 +40,25 @@ RCT_EXPORT_METHOD(connect:(RCTPromiseResolveBlock)resolve
     
 }
 
-RCT_EXPORT_METHOD(disconnect:(RCTPromiseResolveBlock)resolve
-                  rejecter:(RCTPromiseRejectBlock)reject)
+RCT_REMAP_METHOD(disconnect,
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
     [zplPrinter closePort];
-	
+    
     resolve(@(YES));
 }
 
-RCT_EXPORT_METHOD(print:(NSString*) txt
-                 withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
+RCT_REMAP_METHOD(print,
+                  withPrintString:(NSString*) txt
+                  withResolver:(RCTPromiseResolveBlock)resolve
+                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
     [zplPrinter startPage];
     [zplPrinter setInternationalFont:0];
     
     [zplPrinter printString:txt];
-
+    
 }
 
-RCT_REMAP_METHOD(multiply,
-                 multiplyWithA:(double)a withB:(double)b
-                 withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-{
-    NSNumber *result = @(a * b);
-
-    resolve(result);
-}
+@end
