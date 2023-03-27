@@ -44,9 +44,18 @@ RCT_REMAP_METHOD(disconnect,
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    [zplPrinter closePort];
-    
-    resolve(@(YES));
+    @try {
+        [zplPrinter closePort];
+        
+        [[NSNotificationCenter defaultCenter] removeObserver:self name:EADSessionDataReceivedNotification object:nil];
+       
+    } @catch (NSException *exception) {
+        resolve(@(NO));
+    } @finally {
+        
+        resolve(@(YES));
+    }
+     
 }
 
 RCT_REMAP_METHOD(print,
@@ -54,11 +63,13 @@ RCT_REMAP_METHOD(print,
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 {
+    [zplPrinter setupPrinter:ZPL_ROTATION_180 withmTrack:media_type withWidth:384 withHeight:480];
     [zplPrinter startPage];
     [zplPrinter setInternationalFont:0];
     
     [zplPrinter printString:txt];
     
+    resolve(@(YES));
 }
 
 @end
