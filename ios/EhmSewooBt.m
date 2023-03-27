@@ -63,11 +63,14 @@ RCT_REMAP_METHOD(print,
                   withResolver:(RCTPromiseResolveBlock)resolve
                   withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    [zplPrinter setupPrinter:ZPL_ROTATION_180 withmTrack:ZPL_SENSE_GAP withWidth:384 withHeight:480];
+    [zplPrinter setupPrinter:ZPL_ROTATION_180 withmTrack:ZPL_SENSE_GAP withWidth:100 withHeight:120];
     [zplPrinter startPage];
     [zplPrinter setInternationalFont:0];
     
     [zplPrinter printString:txt];
+    
+    [zplPrinter endPage:1];
+    [zplPrinter printerCheck];
     
     resolve(@(YES));
 }
