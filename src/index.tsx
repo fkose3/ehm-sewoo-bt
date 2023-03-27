@@ -17,6 +17,14 @@ const EhmSewooBt = NativeModules.EhmSewooBt
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return EhmSewooBt.multiply(a, b);
+export function connect(): Promise<boolean> {
+  return EhmSewooBt.connect();
+}
+
+export function disconnect(): Promise<boolean> {
+  return EhmSewooBt.disconnect();
+}
+
+export function print(zpl: string): Promise<boolean> {
+  return EhmSewooBt.print(zpl);
 }

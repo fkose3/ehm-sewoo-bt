@@ -19,6 +19,10 @@ Pod::Spec.new do |s|
   s.vendored_libraries = "ios/libs/sewoo/libPrinter_188b.a"
   s.public_header_files = ['ios/libs/sewoo/usr/local/include*.{h,m,mm}']
 
+  s.info_plist = {
+    'UISupportedExternalAccessoryProtocols' => ["com.mobileprinter.datapath"]
+  }
+
   s.dependency "React-Core"
 
   # Don't install the dependencies when we run `pod install` in the old architecture.
