@@ -3,12 +3,8 @@ package com.ehmsewoobt;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.widget.ArrayAdapter;
 import androidx.annotation.NonNull;
-import com.facebook.react.bridge.Promise;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContextBaseJavaModule;
-import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.*;
 import com.facebook.react.module.annotations.ReactModule;
 import com.sewoo.jpos.command.ZPLConst;
 import com.sewoo.jpos.printer.ZPLPrinter;
@@ -26,7 +22,7 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
   private BluetoothAdapter mBluetoothAdapter;
   private BluetoothPort bluetoothPort;
   private static final int BT_PRINTER = 1536;
-  private ArrayAdapter<String> pairedDevicesArrayAdapter;
+  private WritableArray pairedDevicesArrayAdapter;
   private Vector<BluetoothDevice> remoteDevices;
 
 
@@ -66,7 +62,7 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
     BluetoothDevice pairedDevice;
 
     clearBtDevData();
-    pairedDevicesArrayAdapter.clear();
+    pairedDevicesArrayAdapter = Arguments.createArray();
 
     Iterator<BluetoothDevice> iter = (mBluetoothAdapter.getBondedDevices()).iterator();
 
@@ -85,7 +81,7 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
 
           key = pairedDevice.getName() + "\n" + pairedDevice.getAddress();
 
-          pairedDevicesArrayAdapter.add(key);
+          pairedDevicesArrayAdapter.pushString(key);
         }
       }
     }
