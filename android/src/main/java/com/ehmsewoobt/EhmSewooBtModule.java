@@ -3,11 +3,13 @@ package com.ehmsewoobt;
 import android.annotation.SuppressLint;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Intent;
 import androidx.annotation.NonNull;
 import com.facebook.react.bridge.*;
 import com.facebook.react.module.annotations.ReactModule;
 import com.sewoo.jpos.command.ZPLConst;
 import com.sewoo.jpos.printer.ZPLPrinter;
+import com.sewoo.jpos.request.RequestQueue;
 import com.sewoo.port.android.BluetoothPort;
 import com.sewoo.port.android.DeviceConnection;
 
@@ -115,30 +117,12 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
     if(btDevice == null)
       return;
 
-    bluetoothPort.connect(deviceAddr);
+    bluetoothPort.connect(btDevice);
 
-    while(!bluetoothPort.isConnected())
-    {
-      Thread.sleep(300);
-    }
-    
-    zplPrinter = new ZPLPrinter();
-    zplPrinter.setupPrinter(ZPLConst.ROTATION_180, ZPLConst.SENSE_CONTINUOUS, 384, 480);
+    RequestQueue.getInstance().addRequest("^XA^FO50,50^A0N,50,50^FDHello, World!^FS^XZ".getBytes("ISO-8859-1"));
 
-    zplPrinter.startPage();
-    zplPrinter.setInternationalFont(0);
+    Thread.sleep(4000);
 
-
-    zplPrinter.printText(ZPLConst.FONT_A, ZPLConst.ROTATION_0, 15, 12, 0, 0, "FontA 0123");
-    zplPrinter.printText(ZPLConst.FONT_B, ZPLConst.ROTATION_0, 15, 12, 0, 30, "FontB 0123");
-    zplPrinter.printText(ZPLConst.FONT_C, ZPLConst.ROTATION_0, 15, 12, 0, 60, "FontC 0123");
-    zplPrinter.printText(ZPLConst.FONT_D, ZPLConst.ROTATION_0, 15, 12, 0, 90, "FontD 0123");
-    zplPrinter.printText(ZPLConst.FONT_E, ZPLConst.ROTATION_0, 15, 12, 0, 120, "FontE 0123");
-    zplPrinter.printText(ZPLConst.FONT_F, ZPLConst.ROTATION_0, 15, 12, 0, 160, "FontF 0123");
-    zplPrinter.printText(ZPLConst.FONT_G, ZPLConst.ROTATION_0, 15, 12, 0, 210, "FontG 01");
-    zplPrinter.printText(ZPLConst.FONT_H, ZPLConst.ROTATION_0, 15, 12, 0, 300, "FontH 01234567");
-
-    zplPrinter.endPage(1);
 
     bluetoothPort.disconnect();
 
