@@ -9,6 +9,7 @@ import com.facebook.react.module.annotations.ReactModule;
 import com.sewoo.jpos.command.ZPLConst;
 import com.sewoo.jpos.printer.ZPLPrinter;
 import com.sewoo.port.android.BluetoothPort;
+import com.sewoo.port.android.DeviceConnection;
 
 import java.io.IOException;
 import java.util.Iterator;
@@ -52,7 +53,6 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
     bluetoothPort = BluetoothPort.getInstance();
     bluetoothPort.SetMacFilter(false);   //not using mac address filtering
 
-    zplPrinter = new ZPLPrinter();
   }
 
   @SuppressLint("MissingPermission")
@@ -117,6 +117,12 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
 
     bluetoothPort.connect(deviceAddr);
 
+    while(!bluetoothPort.isConnected())
+    {
+      Thread.sleep(300);
+    }
+    
+    zplPrinter = new ZPLPrinter();
     zplPrinter.setupPrinter(ZPLConst.ROTATION_180, ZPLConst.SENSE_CONTINUOUS, 384, 480);
 
     zplPrinter.startPage();
