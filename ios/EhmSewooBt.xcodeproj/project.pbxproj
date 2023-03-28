@@ -7,8 +7,11 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		5E555C0D2413F4C50049A1A2 /* EhmSewooBt.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* EhmSewooBt.m */; };
-		F4FF95D7245B92E800C19C63 /*  EhmSewooBt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /*  EhmSewooBt.swift */; };
+		3D54482229D25F7700A8FE03 /* ExternalAccessory.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D54482129D25F7700A8FE03 /* ExternalAccessory.framework */; };
+		3D54482A29D327A800A8FE03 /* libPrinter_188b.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 3D54482929D327A800A8FE03 /* libPrinter_188b.a */; };
+		3D54483429D3286A00A8FE03 /* EhmSewooBt.swift in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D6245B92E800C19C63 /* EhmSewooBt.swift */; };
+		3D54483529D3286A00A8FE03 /* EhmSewooBt.m in Sources */ = {isa = PBXBuildFile; fileRef = B3E7B5891CC2AC0600A0062D /* EhmSewooBt.m */; };
+		3D54483629D3286A00A8FE03 /* EhmSewooBt-Bridging-Header.h in Sources */ = {isa = PBXBuildFile; fileRef = F4FF95D5245B92E700C19C63 /* EhmSewooBt-Bridging-Header.h */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +28,14 @@
 
 /* Begin PBXFileReference section */
 		134814201AA4EA6300B7C361 /* libEhmSewooBt.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libEhmSewooBt.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		3D54481B29D25E4D00A8FE03 /* PortInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PortInterface.h; sourceTree = "<group>"; };
+		3D54481C29D25E4D00A8FE03 /* WiFiPortInterface.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WiFiPortInterface.h; sourceTree = "<group>"; };
+		3D54481D29D25E4D00A8FE03 /* EABluetoothPort.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = EABluetoothPort.h; sourceTree = "<group>"; };
+		3D54481E29D25E4D00A8FE03 /* CallbackData.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = CallbackData.h; sourceTree = "<group>"; };
+		3D54481F29D25E4D00A8FE03 /* PortDirect.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = PortDirect.h; sourceTree = "<group>"; };
+		3D54482029D25E4D00A8FE03 /* ZPLPrinter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ZPLPrinter.h; sourceTree = "<group>"; };
+		3D54482129D25F7700A8FE03 /* ExternalAccessory.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ExternalAccessory.framework; path = Platforms/MacOSX.platform/Developer/SDKs/MacOSX13.1.sdk/System/Library/Frameworks/ExternalAccessory.framework; sourceTree = DEVELOPER_DIR; };
+		3D54482929D327A800A8FE03 /* libPrinter_188b.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = libPrinter_188b.a; path = PrinterLibrary/libPrinter_188b.a; sourceTree = SOURCE_ROOT; };
 		B3E7B5891CC2AC0600A0062D /* EhmSewooBt.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = EhmSewooBt.m; sourceTree = "<group>"; };
 		F4FF95D5245B92E700C19C63 /* EhmSewooBt-Bridging-Header.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "EhmSewooBt-Bridging-Header.h"; sourceTree = "<group>"; };
 		F4FF95D6245B92E800C19C63 /* EhmSewooBt.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EhmSewooBt.swift; sourceTree = "<group>"; };
@@ -35,6 +46,8 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				3D54482A29D327A800A8FE03 /* libPrinter_188b.a in Frameworks */,
+				3D54482229D25F7700A8FE03 /* ExternalAccessory.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -49,9 +62,34 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
+		3D54481729D25E2B00A8FE03 /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				3D54482929D327A800A8FE03 /* libPrinter_188b.a */,
+				3D54482129D25F7700A8FE03 /* ExternalAccessory.framework */,
+			);
+			path = Frameworks;
+			sourceTree = "<group>";
+		};
+		3D54481A29D25E4D00A8FE03 /* include */ = {
+			isa = PBXGroup;
+			children = (
+				3D54481B29D25E4D00A8FE03 /* PortInterface.h */,
+				3D54481C29D25E4D00A8FE03 /* WiFiPortInterface.h */,
+				3D54481D29D25E4D00A8FE03 /* EABluetoothPort.h */,
+				3D54481E29D25E4D00A8FE03 /* CallbackData.h */,
+				3D54481F29D25E4D00A8FE03 /* PortDirect.h */,
+				3D54482029D25E4D00A8FE03 /* ZPLPrinter.h */,
+			);
+			name = include;
+			path = "../../../Downloads/iOS_SDK_1.88b 2/Swift_Sample/Bluetooth/ZPL-BT-Swift/PrinterLibrary/include";
+			sourceTree = "<group>";
+		};
 		58B511D21A9E6C8500147676 = {
 			isa = PBXGroup;
 			children = (
+				3D54481A29D25E4D00A8FE03 /* include */,
+				3D54481729D25E2B00A8FE03 /* Frameworks */,
 				F4FF95D6245B92E800C19C63 /* EhmSewooBt.swift */,
 				B3E7B5891CC2AC0600A0062D /* EhmSewooBt.m */,
 				F4FF95D5245B92E700C19C63 /* EhmSewooBt-Bridging-Header.h */,
@@ -66,8 +104,8 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 58B511EF1A9E6C8500147676 /* Build configuration list for PBXNativeTarget "EhmSewooBt" */;
 			buildPhases = (
-				58B511D71A9E6C8500147676 /* Sources */,
 				58B511D81A9E6C8500147676 /* Frameworks */,
+				3D54483329D3286300A8FE03 /* Sources */,
 				58B511D91A9E6C8500147676 /* CopyFiles */,
 			);
 			buildRules = (
@@ -112,12 +150,13 @@
 /* End PBXProject section */
 
 /* Begin PBXSourcesBuildPhase section */
-		58B511D71A9E6C8500147676 /* Sources */ = {
+		3D54483329D3286300A8FE03 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F4FF95D7245B92E800C19C63 /* EhmSewooBt.swift in Sources */,
-				B3E7B58A1CC2AC0600A0062D /* EhmSewooBt.m in Sources */,
+				3D54483429D3286A00A8FE03 /* EhmSewooBt.swift in Sources */,
+				3D54483529D3286A00A8FE03 /* EhmSewooBt.m in Sources */,
+				3D54483629D3286A00A8FE03 /* EhmSewooBt-Bridging-Header.h in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -227,8 +266,12 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
+					"$(PROJECT_DIR)/PrinterLibrary/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/PrinterLibrary",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = EhmSewooBt;
 				SKIP_INSTALL = YES;
@@ -246,8 +289,12 @@
 					/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include,
 					"$(SRCROOT)/../../../React/**",
 					"$(SRCROOT)/../../react-native/React/**",
+					"$(PROJECT_DIR)/PrinterLibrary/include",
 				);
-				LIBRARY_SEARCH_PATHS = "$(inherited)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/PrinterLibrary",
+				);
 				OTHER_LDFLAGS = "-ObjC";
 				PRODUCT_NAME = EhmSewooBt;
 				SKIP_INSTALL = YES;

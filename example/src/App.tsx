@@ -1,18 +1,40 @@
 import * as React from 'react';
 
-import { StyleSheet, View, Text } from 'react-native';
-import { multiply } from 'ehm-sewoo-bt';
+import {
+  StyleSheet,
+  View,
+  Text,
+  Button,
+  FlatList,
+  TouchableOpacity,
+} from 'react-native';
+import { SewooPrinter } from 'ehm-sewoo-bt';
 
 export default function App() {
-  const [result, setResult] = React.useState<number | undefined>();
+  const [btDevices, setDevices] = React.useState<
+    { deviceAddr?: string; deviceName?: string }[]
+  >([]);
+  const [selectedDevice, setSelectedDevice] = React.useState('');
+  const discoverDevices = async () => {
+    const devices = await SewooPrinter.discoverDevices();
 
-  React.useEffect(() => {
-    multiply(3, 7).then(setResult);
-  }, []);
+    const parsedDevices = devices.map((device) => {
+      const splitted = device.split('\n');
 
+      return { deviceAddr: splitted[0], deviceName: splitted[1] };
+    });
+
+    setDevices(parsedDevices);
+  };
+
+  const printZpl = async () => {
+    await SewooPrinter.printZpl(selectedDevice);
+  };
+
+  console.log('burdayız');
   return (
     <View style={styles.container}>
-      <Text>Result: {result}</Text>
+      <View style={{ height: 30 }} />
     </View>
   );
 }
@@ -20,8 +42,6 @@ export default function App() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
   },
   box: {
     width: 60,

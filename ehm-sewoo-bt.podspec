@@ -16,8 +16,11 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
+  s.vendored_libraries = ['ios/PrinterLibrary/libPrinter_188b.a']
+  s.public_header_files = ['ios/PrinterLibrary/include/*.{h,m,mm}']
+  s.frameworks = "ExternalAccessory"
+  
   s.dependency "React-Core"
-
   # Don't install the dependencies when we run `pod install` in the old architecture.
   if ENV['RCT_NEW_ARCH_ENABLED'] == '1' then
     s.compiler_flags = folly_compiler_flags + " -DRCT_NEW_ARCH_ENABLED=1"
