@@ -1,4 +1,4 @@
-import { NativeModules, Platform } from 'react-native';
+import { NativeEventEmitter, NativeModules, Platform } from 'react-native';
 
 const LINKING_ERROR =
   `The package 'ehm-sewoo-bt' doesn't seem to be linked. Make sure: \n\n` +
@@ -6,7 +6,7 @@ const LINKING_ERROR =
   '- You rebuilt the app after installing the package\n' +
   '- You are not using Expo Go\n';
 
-const EhmSewooBt = NativeModules.EhmSewooBt
+const BluetoothModule = NativeModules.EhmSewooBt
   ? NativeModules.EhmSewooBt
   : new Proxy(
       {},
@@ -17,28 +17,142 @@ const EhmSewooBt = NativeModules.EhmSewooBt
       }
     );
 
-export function multiply(a: number, b: number): Promise<number> {
-  return EhmSewooBt.multiply(a, b);
-}
+const BluetoothEventEmitter = new NativeEventEmitter(NativeModules.EhmSewooBt);
 
-export function connect(): Promise<boolean> {
-  return EhmSewooBt.connect();
-}
+export type EventNames =
+  | 'connected'
+  | 'disconnected'
+  | 'searchStarted'
+  | 'searchFinished'
+  | 'connectionFailed'
+  | 'deviceFound';
 
-export function disconnect(): Promise<void> {
-  return EhmSewooBt.disconnect();
-}
+export type SewooDeviceInfo = {
+  name?: string;
+  address?: string;
+  bondState?: number;
+  deviceClass?: number;
+  majorDeviceClass?: number;
+  message?: string;
+};
 
-export function print(zpl: string): Promise<void> {
-  return EhmSewooBt.print(zpl);
-}
+export type BluetoothEvent = {
+  eventName: EventNames;
+  data?: {
+    name?: string;
+    address?: string;
+    bondState?: number;
+    deviceClass?: number;
+    majorDeviceClass?: number;
+    message?: string;
+  };
+};
 
-export class SewooPrinter {
-  static discoverDevices(): Promise<string[]> {
-    return EhmSewooBt.DiscoverDevices();
+type BluetoothDevice = {
+  name?: string;
+  address?: string;
+  bondState?: number;
+  deviceClass?: number;
+  majorDeviceClass?: number;
+};
+
+type BluetoothModuleType = {
+  findDevices(): void;
+  cancelDiscovery(): void;
+  connectToDevice(address: string): Promise<void>;
+  disconnectFromDevice(): void;
+  printText(text: string): Promise<void>;
+  printImage(imagePath: string): Promise<void>;
+  getConnectedDevice(): Promise<BluetoothDevice | null>;
+  addListener(eventType: 'connected', listener: () => void): void;
+  addListener(eventType: 'disconnected', listener: () => void): void;
+  addListener(eventType: 'searchStarted', listener: () => void): void;
+  addListener(eventType: 'searchFinished', listener: () => void): void;
+  addListener(eventType: 'deviceFound', listener: () => void): void;
+  addListener(
+    eventType: 'connectionFailed',
+    listener: (message: string) => void
+  ): void;
+  removeListeners(): void;
+};
+
+export default class SewooPrinter {
+  private eventSubscriptions: any[];
+
+  constructor() {
+    this.eventSubscriptions = [];
+
+    BluetoothEventEmitter.addListener(
+      'BluetoothEvent',
+      (event: BluetoothEvent) => {
+        switch (event.eventName) {
+          case 'connected':
+            this.emit('connected');
+            break;
+          case 'disconnected':
+            this.emit('disconnected');
+            break;
+          case 'searchStarted':
+            this.emit('searchStarted');
+            break;
+          case 'searchFinished':
+            this.emit('searchFinished');
+            break;
+          case 'connectionFailed':
+            this.emit('connectionFailed', event.data?.message);
+            break;
+        }
+      }
+    );
   }
 
-  static printZpl(deviceAddr: string): Promise<boolean> {
-    return EhmSewooBt.PrintZpl(deviceAddr);
+  private emit(eventType: string, arg?: any) {
+    this.eventSubscriptions.forEach((eventSubscription) => {
+      if (eventSubscription.eventType === eventType) {
+        eventSubscription.listener(arg);
+      }
+    });
+  }
+
+  addListener(eventType: string, listener: any) {
+    this.eventSubscriptions.push({ eventType, listener });
+  }
+
+  removeListeners() {
+    this.eventSubscriptions = [];
+  }
+
+  findDevices() {
+    BluetoothModule.findDevices();
+  }
+
+  cancelDiscovery() {
+    BluetoothModule.cancelDiscovery();
+  }
+
+  connectToDevice(address: string) {
+    return BluetoothModule.connectToDevice(address);
+  }
+
+  disconnectFromDevice() {
+    BluetoothModule.disconnectFromDevice();
+  }
+
+  printZpl(deviceAddr: string): Promise<boolean> {
+    return BluetoothModule.PrintZpl(deviceAddr);
+  }
+
+  async getConnectedDevice(): Promise<BluetoothDevice | null> {
+    const deviceInfo = await BluetoothModule.getConnectedDevice();
+    if (deviceInfo) {
+      return {
+        name: deviceInfo.name,
+        address: deviceInfo.address,
+        bondState: deviceInfo.bondState,
+        deviceClass: deviceInfo.deviceClass,
+        majorDeviceClass: deviceInfo.majorDeviceClass,
+      };
+    }
+    return null;
   }
 }
