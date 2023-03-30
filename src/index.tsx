@@ -36,6 +36,14 @@ export type SewooDeviceInfo = {
   message?: string;
 };
 
+type BluetoothDevice = {
+  name?: string;
+  address?: string;
+  bondState?: number;
+  deviceClass?: number;
+  majorDeviceClass?: number;
+};
+
 export type BluetoothEvent = {
   eventName: EventNames;
   data?: {
@@ -48,15 +56,7 @@ export type BluetoothEvent = {
   };
 };
 
-type BluetoothDevice = {
-  name?: string;
-  address?: string;
-  bondState?: number;
-  deviceClass?: number;
-  majorDeviceClass?: number;
-};
-
-type BluetoothModuleType = {
+export type BluetoothModuleType = {
   findDevices(): void;
   cancelDiscovery(): void;
   connectToDevice(address: string): Promise<void>;
