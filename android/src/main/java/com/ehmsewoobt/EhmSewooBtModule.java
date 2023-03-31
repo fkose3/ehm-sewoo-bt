@@ -1,15 +1,19 @@
 package com.ehmsewoobt;
 
-import android.annotation.SuppressLint;
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothClass;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
+import android.os.AsyncTask;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ListView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import com.facebook.react.bridge.*;
 import com.facebook.react.module.annotations.ReactModule;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
@@ -17,243 +21,494 @@ import com.sewoo.jpos.command.ZPLConst;
 import com.sewoo.jpos.printer.ZPLPrinter;
 import com.sewoo.jpos.request.RequestQueue;
 import com.sewoo.port.android.BluetoothPort;
-import com.sewoo.port.android.DeviceConnection;
+import com.sewoo.request.android.RequestHandler;
 import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.util.ArrayList;
+import java.io.UnsupportedEncodingException;
 import java.util.Iterator;
-import java.util.UUID;
 import java.util.Vector;
 
 @ReactModule(name = EhmSewooBtModule.NAME)
-@SuppressLint("MissingPermission")
 public class EhmSewooBtModule extends ReactContextBaseJavaModule {
   public static final String NAME = "EhmSewooBt";
-  private static final int BT_PRINTER = 1536;
-  private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
-
-  private BluetoothAdapter bluetoothAdapter;
-  private BluetoothPort bluetoothPortConnection;
-  private BluetoothSocket bluetoothSocket;
-  private OutputStream outputStream;
-  private InputStream inputStream;
-  private ArrayList<BluetoothDevice> remoteDevices = new ArrayList<>();
-
-  private final BroadcastReceiver discoveryResult;
-  private final BroadcastReceiver connectDevice;
-  private final BroadcastReceiver searchStart;
-  private final BroadcastReceiver searchFinish;
-  private final ZPLPrinter zplPrinter;
   private final ReactApplicationContext reactContext;
-  public String getName() {
-    return NAME;
-  }
 
+  private static final int REQUEST_ENABLE_BT = 2;
+  private static final int BT_PRINTER = 1536;
+
+  private BroadcastReceiver discoveryResult;
+  private BroadcastReceiver searchFinish;
+  private BroadcastReceiver searchStart;
+  private BroadcastReceiver connectDevice;
+
+  private Vector<BluetoothDevice> remoteDevices;
+  private BluetoothDevice btDev;
+  private BluetoothAdapter mBluetoothAdapter;
+  private BluetoothPort bluetoothPort;
+  private CheckTypesTask BTtask;
+  private ExcuteDisconnectBT BTdiscon;
+  private ZPLPrinter zplPrinter;
+  ArrayAdapter<String> adapter;
+  private Thread btThread;
+  boolean searchflags;
+  private boolean disconnectflags;
 
   public EhmSewooBtModule(ReactApplicationContext reactContext) {
     super(reactContext);
     this.reactContext = reactContext;
 
-    bluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-    bluetoothPortConnection = BluetoothPort.getInstance();
-    zplPrinter = new ZPLPrinter();
+    adapter = new ArrayAdapter<String>(this.reactContext, android.R.layout.simple_list_item_1);
+    searchflags = false;
+    disconnectflags = false;
+    this.Init_BluetoothSet();
+    bluetoothPort = BluetoothPort.getInstance();
+    bluetoothPort.SetMacFilter(false);   //not using mac address filtering
 
-    discoveryResult = new BroadcastReceiver() {
-      @Override
-      public void onReceive(Context context, Intent intent) {
-        BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-        if (remoteDevice != null) {
-          int devNum = remoteDevice.getBluetoothClass().getMajorDeviceClass();
-          if (devNum == BT_PRINTER) {
-            String key;
-            if (remoteDevice.getBondState() != BluetoothDevice.BOND_BONDED) {
-              key = remoteDevice.getName() + "\n[" + remoteDevice.getAddress() + "]";
-            } else {
-              key = remoteDevice.getName() + "\n[" + remoteDevice.getAddress() + "] [Paired]";
-            }
-            if (bluetoothAdapter.checkBluetoothAddress(remoteDevice.getAddress())) {
-              if (!remoteDevices.contains(remoteDevice)) {
-                remoteDevices.add(remoteDevice);
-              }
-              sendBluetoothEvent("deviceFound", getDeviceInfo(remoteDevice));
-            }
-          }
-        }
-      }
-    };
+    addPairedDevices();
+    zplPrinter = new ZPLPrinter();
+  }
+
+  public void Init_BluetoothSet()
+  {
+    bluetoothSetup();
 
     connectDevice = new BroadcastReceiver() {
       @Override
       public void onReceive(Context context, Intent intent) {
         String action = intent.getAction();
-        if (BluetoothDevice.ACTION_ACL_CONNECTED.equals(action)) {
-          sendBluetoothEvent("connected", null);
-        } else if (BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action)) {
+
+        if(BluetoothDevice.ACTION_ACL_CONNECTED.equals(action))
+        {
+          //Toast.makeText(getApplicationContext(), "BlueTooth Connect", Toast.LENGTH_SHORT).show();
+        }
+        else if(BluetoothDevice.ACTION_ACL_DISCONNECTED.equals(action))
+        {
           try {
-            if (outputStream != null) {
-              outputStream.close();
-            }
-            if (inputStream != null) {
-              inputStream.close();
-            }
-            if (bluetoothSocket != null) {
-              bluetoothSocket.close();
-            }
+            if(bluetoothPort.isConnected())
+              bluetoothPort.disconnect();
           } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+          } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
             e.printStackTrace();
           }
-          sendBluetoothEvent("disconnected", null);
+
+          if((btThread != null) && (btThread.isAlive()))
+          {
+            btThread.interrupt();
+            btThread = null;
+          }
+
+          ConnectionFailedDevice();
+
+          //Toast.makeText(getApplicationContext(), "BlueTooth Disconnect", Toast.LENGTH_SHORT).show();
         }
       }
     };
 
-    searchStart = new BroadcastReceiver() {
+    discoveryResult = new BroadcastReceiver()
+    {
       @Override
-      public void onReceive(Context context, Intent intent) {
-        sendBluetoothEvent("searchStarted", null);
+      public void onReceive(Context context, Intent intent)
+      {
+        String key;
+        boolean bFlag = true;
+        BluetoothDevice btDev;
+        BluetoothDevice remoteDevice = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+
+        if(remoteDevice != null)
+        {
+          int devNum = remoteDevice.getBluetoothClass().getMajorDeviceClass();
+
+          if(devNum != BT_PRINTER)
+            return;
+
+          if(remoteDevice.getBondState() != BluetoothDevice.BOND_BONDED)
+          {
+            key = remoteDevice.getName() +"\n["+remoteDevice.getAddress()+"]";
+          }
+          else
+          {
+            key = remoteDevice.getName() +"\n["+remoteDevice.getAddress()+"] [Paired]";
+          }
+          if(bluetoothPort.isValidAddress(remoteDevice.getAddress()))
+          {
+            for(int i = 0; i < remoteDevices.size(); i++)
+            {
+              btDev = remoteDevices.elementAt(i);
+              if(remoteDevice.getAddress().equals(btDev.getAddress()))
+              {
+                bFlag = false;
+                break;
+              }
+            }
+            if(bFlag)
+            {
+              remoteDevices.add(remoteDevice);
+              adapter.add(key);
+            }
+          }
+        }
       }
     };
 
-    searchFinish = new BroadcastReceiver() {
+    this.reactContext.registerReceiver(discoveryResult, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+
+    searchStart = new BroadcastReceiver()
+    {
       @Override
-      public void onReceive(Context context, Intent intent) {
-        sendBluetoothEvent("searchFinished", null);
+      public void onReceive(Context context, Intent intent)
+      {
+        //Toast.makeText(mainView, "블루투스 기기 검색 시작", Toast.LENGTH_SHORT).show();
       }
     };
+    this.reactContext.registerReceiver(searchStart, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED));
 
-    registerBluetoothBroadcastReceivers();
-  }
-
-  private void registerBluetoothBroadcastReceivers() {
-    IntentFilter filter = new IntentFilter(BluetoothDevice.ACTION_FOUND);
-    reactContext.registerReceiver(discoveryResult, filter);
-
-    filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
-    reactContext.registerReceiver(searchStart, filter);
-
-    filter = new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
-    reactContext.registerReceiver(searchFinish, filter);
-
-    filter = new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED);
-    reactContext.registerReceiver(connectDevice, filter);
-
-    filter = new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED);
-    reactContext.registerReceiver(connectDevice, filter);
-  }
-
-  private void unregisterBluetoothBroadcastReceivers() {
-    reactContext.unregisterReceiver(discoveryResult);
-    reactContext.unregisterReceiver(searchStart);
-    reactContext.unregisterReceiver(searchFinish);
-    reactContext.unregisterReceiver(connectDevice);
-  }
-
-  @ReactMethod
-  public void findDevices() {
-    remoteDevices.clear();
-    if (bluetoothAdapter.isEnabled()) {
-      if (bluetoothAdapter.isDiscovering()) {
-        bluetoothAdapter.cancelDiscovery();
+    searchFinish = new BroadcastReceiver()
+    {
+      @Override
+      public void onReceive(Context context, Intent intent)
+      {
+        searchflags = true;
       }
-      bluetoothAdapter.startDiscovery();
+    };
+    this.reactContext.registerReceiver(searchFinish, new IntentFilter(BluetoothAdapter.ACTION_DISCOVERY_FINISHED));
+  }
+
+  public void ConnectionFailedDevice()
+  {
+
+  }
+
+  private void bluetoothSetup()
+  {
+    // Initialize
+    clearBtDevData();
+
+    mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+    if (mBluetoothAdapter == null)
+    {
+      // Device does not support Bluetooth
+      return;
+    }
+    if (!mBluetoothAdapter.isEnabled())
+    {
+      Intent enableBtIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+
+      this.getCurrentActivity().startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
     }
   }
 
+  private void clearBtDevData()
+  {
+    remoteDevices = new Vector<BluetoothDevice>();
+  }
+
+  @NonNull
+  @NotNull
+  @Override
+  public String getName() {
+    return NAME;
+  }
+
+
   @ReactMethod
-  public void cancelDiscovery() {
-    if (bluetoothAdapter.isEnabled()) {
-      bluetoothAdapter.cancelDiscovery();
-    }
+  public void DiscoverDevices()
+  {
+      BTtask = new CheckTypesTask();
+      BTtask.execute();
   }
 
   @ReactMethod
-  public void connectToDevice(String address, Promise promise) {
-    BluetoothDevice device = bluetoothAdapter.getRemoteDevice(address);
+  public void PrintZpl(String zpl) throws UnsupportedEncodingException
+  {
+    zplPrinter.setupPrinter(ZPLConst.ROTATION_180, ZPLConst.SENSE_GAP, 384, 480);
+
+    zplPrinter.setInternationalFont(0);
+
+    RequestQueue.getInstance().addRequest(zpl.getBytes());
+  }
+
+  @ReactMethod
+  public void StopDiscover()
+  {
+    searchflags = true;
+    mBluetoothAdapter.cancelDiscovery();
+  }
+
+  @ReactMethod
+  private void ConnectDevice(String deviceAddr, Promise promise)
+  {
     try {
-      bluetoothSocket = device.createRfcommSocketToServiceRecord(SPP_UUID);
-      bluetoothSocket.connect();
-      inputStream = bluetoothSocket.getInputStream();
-      outputStream = bluetoothSocket.getOutputStream();
-      bluetoothPortConnection.connect(device);
-      sendBluetoothEvent("connected", null);
-      promise.resolve(null);
+      btConn(mBluetoothAdapter.getRemoteDevice(deviceAddr));
+      promise.resolve(true);
     } catch (IOException e) {
-      sendBluetoothEvent("connectionFailed", e.getMessage());
       promise.reject(e);
     }
   }
 
   @ReactMethod
-  public void disconnectFromDevice() {
+  private void GetDevices(Promise promise)
+  {
+    WritableArray app_list = new WritableNativeArray();
+    for (BluetoothDevice bt : remoteDevices) {
+      BluetoothClass bluetoothClass = bt.getBluetoothClass(); // get class of bluetooth device
+      WritableMap info = new WritableNativeMap();
+      info.putString("address", bt.getAddress());
+      info.putDouble("class", bluetoothClass.getDeviceClass()); // 1664
+      info.putString("name", bt.getName());
+      info.putString("type", "paired");
+      app_list.pushMap(info);
+    }
+
+    promise.resolve(app_list);
+  }
+  @ReactMethod
+  private void Disconnect()
+  {
+    ExcuteDisconnect();
+  }
+
+  private void addPairedDevices()
+  {
+    BluetoothDevice pairedDevice;
+    Iterator<BluetoothDevice> iter = (mBluetoothAdapter.getBondedDevices()).iterator();
+
+    String key = "";
+
+    while(iter.hasNext())
+    {
+      pairedDevice = iter.next();
+      if(bluetoothPort.isValidAddress(pairedDevice.getAddress()))
+      {
+        int deviceNum = pairedDevice.getBluetoothClass().getMajorDeviceClass();
+
+        if(deviceNum == BT_PRINTER)
+        {
+          remoteDevices.add(pairedDevice);
+
+          key = pairedDevice.getName() +"\n["+pairedDevice.getAddress()+"] [Paired]";
+          adapter.add(key);
+        }
+      }
+    }
+  }
+
+
+  private void sendEvent(
+                         String eventName,
+                         @Nullable WritableMap params) {
+    reactContext
+      .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+      .emit(eventName, params);
+  }
+
+  private class CheckTypesTask extends AsyncTask<Void, Void, Void> {
+
+    @Override
+    protected void onPreExecute(){
+      sendEvent("Searching_Start", null);
+
+      SearchingBTDevice();
+      super.onPreExecute();
+    };
+
+    @Override
+    protected Void doInBackground(Void... params) {
+      // TODO Auto-generated method stub
+      try {
+        while(true)
+        {
+          if(searchflags)
+            break;
+
+          Thread.sleep(100);
+        }
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
+      }
+      return null;
+    }
+
+    @Override
+    protected void onPostExecute(Void result){
+      sendEvent("Searching_Stop", null);
+
+      searchflags = false;
+      super.onPostExecute(result);
+    };
+  }
+
+  private void SearchingBTDevice()
+  {
+    adapter.clear();
+    adapter.notifyDataSetChanged();
+
+    clearBtDevData();
+    mBluetoothAdapter.startDiscovery();
+  }
+
+  private void btConn(final BluetoothDevice btDev) throws IOException
+  {
+    new connBT().execute(btDev);
+  }
+
+  class connBT extends AsyncTask<BluetoothDevice, Void, Integer>
+  {
+    String str_temp = "";
+
+    @Override
+    protected void onPreExecute()
+    {
+      sendEvent("connecting", null);
+      super.onPreExecute();
+    }
+
+    @Override
+    protected Integer doInBackground(BluetoothDevice... params)
+    {
+      Integer retVal = null;
+
+      try
+      {
+        bluetoothPort.connect(params[0]);
+        str_temp = params[0].getAddress();
+
+        retVal = Integer.valueOf(0);
+      }
+      catch (IOException e)
+      {
+        e.printStackTrace();
+        retVal = Integer.valueOf(-1);
+      }
+
+      return retVal;
+    }
+
+    @Override
+    protected void onPostExecute(Integer result)
+    {
+
+      if(result.intValue() == 0)	// Connection success.
+      {
+        RequestHandler rh = new RequestHandler();
+        btThread = new Thread(rh);
+        btThread.start();
+
+
+        reactContext.registerReceiver(connectDevice, new IntentFilter(BluetoothDevice.ACTION_ACL_CONNECTED));
+        reactContext.registerReceiver(connectDevice, new IntentFilter(BluetoothDevice.ACTION_ACL_DISCONNECTED));
+
+        sendEvent("connected", null);
+      }
+      else	// Connection failed.
+      {
+        sendEvent("connection_failed", null);
+      }
+      super.onPostExecute(result);
+    }
+  }
+
+  public void DisconnectDevice()
+  {
     try {
-      if (outputStream != null) {
-        outputStream.close();
-      }
-      if (inputStream != null) {
-        inputStream.close();
-      }
-      if (bluetoothSocket != null) {
-        bluetoothSocket.close();
-      }
+      bluetoothPort.disconnect();
+
+      this.reactContext.unregisterReceiver(connectDevice);
+
+      if((btThread != null) && (btThread.isAlive()))
+        btThread.interrupt();
+
+      disconnectflags = true;
+
     } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
       e.printStackTrace();
     }
-    sendBluetoothEvent("disconnected", null);
   }
 
-  private WritableMap getDeviceInfo(BluetoothDevice device) {
-    WritableMap deviceInfo = Arguments.createMap();
-    deviceInfo.putString("name", device.getName());
-    deviceInfo.putString("address", device.getAddress());
-    deviceInfo.putInt("bondState", device.getBondState());
-    deviceInfo.putInt("deviceClass", device.getBluetoothClass().getDeviceClass());
-    deviceInfo.putInt("majorDeviceClass", device.getBluetoothClass().getMajorDeviceClass());
-    return deviceInfo;
+  public void ExcuteDisconnect()
+  {
+    BTdiscon = new ExcuteDisconnectBT();
+    BTdiscon.execute();
   }
 
-  private void sendBluetoothEvent(String eventName, @Nullable Object data) {
-    WritableMap params = Arguments.createMap();
-    params.putString("eventName", eventName);
-    if (data != null) {
-      if (data instanceof WritableMap) {
-        params.putMap("data", (WritableMap) data);
-      } else {
-        params.putString("data", data.toString());
+  private class ExcuteDisconnectBT extends AsyncTask<Void, Void, Void>{
+
+    @Override
+    protected void onPreExecute(){
+      sendEvent("disconnecting", null);
+      super.onPreExecute();
+    };
+
+    @Override
+    protected Void doInBackground(Void... params) {
+      // TODO Auto-generated method stub
+      try {
+        DisconnectDevice();
+
+        while(true)
+        {
+          if(disconnectflags)
+            break;
+
+          Thread.sleep(100);
+        }
+      } catch (InterruptedException e) {
+        // TODO Auto-generated catch block
+        e.printStackTrace();
       }
+      return null;
     }
-    reactContext.getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-      .emit("BluetoothEvent", params);
-  }
 
-  @ReactMethod
-  public void PrintZpl(String deviceAddr, Promise promise) throws IOException, InterruptedException {
-
-    zplPrinter.setupPrinter(ZPLConst.ROTATION_180, ZPLConst.SENSE_CONTINUOUS, 384, 480);
-
-    zplPrinter.startPage();
-    zplPrinter.setInternationalFont(0);
-
-
-    zplPrinter.printText(ZPLConst.FONT_A, ZPLConst.ROTATION_0, 15, 12, 0, 0, "FontA 0123");
-    zplPrinter.printText(ZPLConst.FONT_B, ZPLConst.ROTATION_0, 15, 12, 0, 30, "FontB 0123");
-    zplPrinter.printText(ZPLConst.FONT_C, ZPLConst.ROTATION_0, 15, 12, 0, 60, "FontC 0123");
-    zplPrinter.printText(ZPLConst.FONT_D, ZPLConst.ROTATION_0, 15, 12, 0, 90, "FontD 0123");
-    zplPrinter.printText(ZPLConst.FONT_E, ZPLConst.ROTATION_0, 15, 12, 0, 120, "FontE 0123");
-    zplPrinter.printText(ZPLConst.FONT_F, ZPLConst.ROTATION_0, 15, 12, 0, 160, "FontF 0123");
-    zplPrinter.printText(ZPLConst.FONT_G, ZPLConst.ROTATION_0, 15, 12, 0, 210, "FontG 01");
-    zplPrinter.printText(ZPLConst.FONT_H, ZPLConst.ROTATION_0, 15, 12, 0, 300, "FontH 01234567");
-
-    zplPrinter.endPage(1);
-
-    promise.resolve(true);
+    @Override
+    protected void onPostExecute(Void result){
+      sendEvent("disconnected", null);
+      disconnectflags = false;
+      super.onPostExecute(result);
+    };
   }
 
   @Override
   public void onCatalystInstanceDestroy() {
     super.onCatalystInstanceDestroy();
-    unregisterBluetoothBroadcastReceivers();
+    try {
+
+      if(bluetoothPort.isConnected())
+      {
+        bluetoothPort.disconnect();
+        this.reactContext.unregisterReceiver(connectDevice);
+      }
+
+    } catch (IOException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    } catch (InterruptedException e) {
+      // TODO Auto-generated catch block
+      e.printStackTrace();
+    }
+
+    if((btThread != null) && (btThread.isAlive()))
+    {
+      btThread.interrupt();
+      btThread = null;
+    }
+
+    this.reactContext.unregisterReceiver(searchFinish);
+    this.reactContext.unregisterReceiver(searchStart);
+    this.reactContext.unregisterReceiver(discoveryResult);
   }
+
+  @Override
+  public void initialize()
+  {
+
+  }
+
 }
