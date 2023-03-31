@@ -1,51 +1,91 @@
-import * as React from 'react';
-
 import {
-  StyleSheet,
-  View,
-  Text,
-  Button,
-  FlatList,
-  TouchableOpacity,
+  NativeModules,
+  DeviceEventEmitter,
+  EmitterSubscription,
 } from 'react-native';
-import { SewooPrinter } from 'ehm-sewoo-bt';
 
-export default function App() {
-  const [btDevices, setDevices] = React.useState<
-    { deviceAddr?: string; deviceName?: string }[]
-  >([]);
-  const [selectedDevice, setSelectedDevice] = React.useState('');
-  const discoverDevices = async () => {
-    const devices = await SewooPrinter.discoverDevices();
+export type Device = {
+  address: string;
+  class: number;
+  name: string;
+  type: string;
+};
 
-    const parsedDevices = devices.map((device) => {
-      const splitted = device.split('\n');
+type EhmSewooBtType = {
+  DiscoverDevices(): void;
+  PrintZpl(zpl: string): void;
+  StopDiscover(): void;
+  ConnectDevice(deviceAddr: string): Promise<boolean>;
+  GetDevices(): Promise<Device[]>;
+  Disconnect(): void;
+};
 
-      return { deviceAddr: splitted[0], deviceName: splitted[1] };
-    });
+const EhmSewooBt = NativeModules.EhmSewooBt as EhmSewooBtType;
 
-    setDevices(parsedDevices);
-  };
+export default EhmSewooBt;
 
-  const printZpl = async () => {
-    await SewooPrinter.printZpl(selectedDevice);
-  };
+export type SewooListenerTypes =
+  | 'Searching_Start'
+  | 'Searching_Stop'
+  | 'connecting'
+  | 'connected'
+  | 'connection_failed'
+  | 'disconnecting'
+  | 'disconnected';
+export const addListener = (
+  listenerType: SewooListenerTypes,
+  callback: () => void
+) => {
+  switch (listenerType) {
+    case 'Searching_Start':
+      return addSearchingStartListener(callback);
+    case 'Searching_Stop':
+      return addSearchingStopListener(callback);
+    case 'connected':
+      return addConnectedListener(callback);
+    case 'connecting':
+      return addConnectingListener(callback);
+    case 'connection_failed':
+      return addConnectionFailedListener(callback);
+    case 'disconnected':
+      return addDisconnectedListener(callback);
+    case 'disconnecting':
+      return addDisconnectingListener(callback);
+  }
+};
 
-  console.log('burdayız');
-  return (
-    <View style={styles.container}>
-      <View style={{ height: 30 }} />
-    </View>
-  );
-}
+const addSearchingStartListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('Searching_Start', callback);
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  box: {
-    width: 60,
-    height: 60,
-    marginVertical: 20,
-  },
-});
+const addSearchingStopListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('Searching_Stop', callback);
+};
+
+const addConnectingListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('connecting', callback);
+};
+
+const addConnectedListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('connected', callback);
+};
+
+const addConnectionFailedListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('connection_failed', callback);
+};
+
+const addDisconnectingListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('disconnecting', callback);
+};
+
+const addDisconnectedListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('disconnected', callback);
+};
