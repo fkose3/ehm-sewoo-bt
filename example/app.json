@@ -1,4 +1,43 @@
 {
-  "name": "EhmSewooBtExample",
-  "displayName": "EhmSewooBtExample"
+  "expo": {
+    "name": "testproj",
+    "slug": "testproj",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "image": "./assets/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fkose3.testproj",
+      "infoPlist": {
+        "UISupportedExternalAccessoryProtocols": ["com.mobileprinter.datapath"]
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "package": "com.fkose3.testproj",
+      "permissions": [
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_CONNECT"
+      ]
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "126c9d88-6141-4f22-8d33-11c4ffb9bcb7"
+      }
+    }
+  }
 }

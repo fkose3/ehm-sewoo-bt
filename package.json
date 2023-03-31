@@ -1,6 +1,6 @@
 {
   "name": "ehm-sewoo-bt",
-  "version": "1.0.6",
+  "version": "1.0.10",
   "description": "test",
   "main": "lib/commonjs/index",
   "module": "lib/module/index",

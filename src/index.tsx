@@ -1,44 +1,93 @@
-import { NativeModules, Platform } from 'react-native';
+import {
+  NativeModules,
+  DeviceEventEmitter,
+  EmitterSubscription,
+} from 'react-native';
 
-const LINKING_ERROR =
-  `The package 'ehm-sewoo-bt' doesn't seem to be linked. Make sure: \n\n` +
-  Platform.select({ ios: "- You have run 'pod install'\n", default: '' }) +
-  '- You rebuilt the app after installing the package\n' +
-  '- You are not using Expo Go\n';
+export type Device = {
+  address: string;
+  class: number;
+  name: string;
+  type: string;
+};
 
-const EhmSewooBt = NativeModules.EhmSewooBt
-  ? NativeModules.EhmSewooBt
-  : new Proxy(
-      {},
-      {
-        get() {
-          throw new Error(LINKING_ERROR);
-        },
-      }
-    );
+type EhmSewooBtType = {
+  DiscoverDevices(): void;
+  PrintZpl(zpl: string): void;
+  StopDiscover(): void;
+  ConnectDevice(deviceAddr: string): Promise<boolean>;
+  GetDevices(): Promise<Device[]>;
+  Disconnect(): void;
+};
 
-export function multiply(a: number, b: number): Promise<number> {
-  return EhmSewooBt.multiply(a, b);
-}
+const EhmSewooBt = NativeModules.EhmSewooBt as EhmSewooBtType;
 
-export function connect(): Promise<boolean> {
-  return EhmSewooBt.connect();
-}
+export default EhmSewooBt;
 
-export function disconnect(): Promise<void> {
-  return EhmSewooBt.disconnect();
-}
-
-export function print(zpl: string): Promise<void> {
-  return EhmSewooBt.print(zpl);
-}
-
-export class SewooPrinter {
-  static discoverDevices(): Promise<string[]> {
-    return EhmSewooBt.DiscoverDevices();
+export type SewooListenerTypes =
+  | 'Searching_Start'
+  | 'Searching_Stop'
+  | 'connecting'
+  | 'connected'
+  | 'connection_failed'
+  | 'disconnecting'
+  | 'disconnected';
+export const addListener = (
+  listenerType: SewooListenerTypes,
+  callback: () => void
+) => {
+  switch (listenerType) {
+    case 'Searching_Start':
+      return addSearchingStartListener(callback);
+    case 'Searching_Stop':
+      return addSearchingStopListener(callback);
+    case 'connected':
+      return addConnectedListener(callback);
+    case 'connecting':
+      return addConnectingListener(callback);
+    case 'connection_failed':
+      return addConnectionFailedListener(callback);
+    case 'disconnected':
+      return addDisconnectedListener(callback);
+    case 'disconnecting':
+      return addDisconnectingListener(callback);
   }
+};
 
-  static printZpl(deviceAddr: string): Promise<boolean> {
-    return EhmSewooBt.PrintZpl(deviceAddr);
-  }
-}
+const addSearchingStartListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('Searching_Start', callback);
+};
+
+ const addSearchingStopListener = (
+   callback: () => void
+ ): EmitterSubscription => {
+   return DeviceEventEmitter.addListener('Searching_Stop', callback);
+ };
+
+ const addConnectingListener = (callback: () => void): EmitterSubscription => {
+   return DeviceEventEmitter.addListener('connecting', callback);
+ };
+
+ const addConnectedListener = (callback: () => void): EmitterSubscription => {
+   return DeviceEventEmitter.addListener('connected', callback);
+ };
+
+ const addConnectionFailedListener = (
+   callback: () => void
+ ): EmitterSubscription => {
+   return DeviceEventEmitter.addListener('connection_failed', callback);
+ };
+
+ const addDisconnectingListener = (
+   callback: () => void
+ ): EmitterSubscription => {
+   return DeviceEventEmitter.addListener('disconnecting', callback);
+ };
+
+ const addDisconnectedListener = (
+   callback: () => void
+ ): EmitterSubscription => {
+   return DeviceEventEmitter.addListener('disconnected', callback);
+ };
