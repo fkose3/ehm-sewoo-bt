@@ -17,35 +17,11 @@ class EhmSewooBt: NSObject, RCTBridgeModule {
         super.init()
         
         let accessoryManager = EAAccessoryManager.shared()
-                accessoryManager.registerForLocalNotifications() // bildirimleri almak için kaydol
-
-                // NotificationCenter'a bildirim ekle
-                NotificationCenter.default.addObserver(self, selector: #selector(accessoryDidConnect(_:)), name: NSNotification.Name.EAAccessoryDidConnect, object: nil)
-                NotificationCenter.default.addObserver(self, selector: #selector(accessoryDidDisconnect(_:)), name: NSNotification.Name.EAAccessoryDidDisconnect, object: nil)
+        accessoryManager.registerForLocalNotifications() // bildirimleri almak için kaydol
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(statusCheckReceived(_:)), name: NSNotification.Name.EADSessionDataReceived, object: nil)
            
     }
-    
-    // Harici bir aksesuar bağlandığında çağrılır
-        @objc func accessoryDidConnect(_ notification: Notification) {
-            let accessory = notification.userInfo![EAAccessoryKey] as! EAAccessory
-            Swift.print("Aksesuar bağlandı: \(accessory.name)")
-
-            // Bildirim göster
-            let alertController = UIAlertController(title: "Aksesuar Bağlandı", message: "\(accessory.name) adlı aksesuar bağlandı.", preferredStyle: .alert)
-            alertController.addAction(UIAlertAction(title: "Tamam", style: .default))
-            UIApplication.shared.keyWindow?.rootViewController?.present(alertController, animated: true)
-        }
-
-        // Harici bir aksesuar bağlantısı kesildiğinde çağrılır
-        @objc func accessoryDidDisconnect(_ notification: Notification) {
-            let accessory = notification.userInfo![EAAccessoryKey] as! EAAccessory
-            Swift.print("Aksesuar bağlantısı kesildi: \(accessory.name)")
-
-            // Bildirim göster
-            let alertController = UIAlertController(title: "Aksesuar Bağlantısı Kesildi", message: "\(accessory.name) adlı aksesuarın bağlantısı kesildi.", preferredStyle: .alert)
-            alertController.addAction(UIAlertAction(title: "Tamam", style: .default))
-            UIApplication.shared.keyWindow?.rootViewController?.present(alertController, animated: true)
-        }
     
     @objc func statusCheckReceived(_ notification:Notification)
     {
@@ -109,10 +85,20 @@ class EhmSewooBt: NSObject, RCTBridgeModule {
         }
     }
     
-    @objc(connect:withRejecter:)
-    func connect(resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
+    @objc(DiscoverDevices:withRejecter:)
+    func DiscoverDevices(resolve:RCTPromiseResolveBlock, reject: RCTPromiseResolveBlock) -> Void {
+        resolve(true)
+    }
+    
+    @objc(StopDiscover:withRejecter:)
+    func StopDiscover(resolve:RCTPromiseResolveBlock, reject: RCTPromiseResolveBlock) -> Void {
+        resolve(true)
+    }
+    
+    @objc(ConnectDevice:withRejecter:)
+    func ConnectDevice(resolve:RCTPromiseResolveBlock, reject: RCTPromiseResolveBlock) -> Void {
         var errCode: Int = 0
-        errCode = zplPrinter.openPort("bluetooth", withPortParam: 9100)
+        errCode = zplPrinter.openPort("bluetooth", withPortParam: 0)
         
         if(errCode >= 0)
         {
@@ -124,16 +110,21 @@ class EhmSewooBt: NSObject, RCTBridgeModule {
         }
     }
     
-    @objc(disconnect:withRejecter:)
-    func disconnect(resolve:RCTPromiseResolveBlock, reject: RCTPromiseResolveBlock) -> Void {
-        zplPrinter.closePort();
+    @objc(GetDevices:withRejecter:)
+    func GetDevices(resolve:RCTPromiseResolveBlock, reject: RCTPromiseResolveBlock) -> Void {
+        resolve(true)
     }
     
-    @objc(print:withResolver:withRejecter:)
-    func print(text:String, resolve:RCTPromiseResolveBlock, reject: RCTPromiseRejectBlock) -> Void {
-
-        var res = zplPrinter.setupPrinter(ZPL_ROTATION_180, withmTrack:media_type, withWidth:384, withHeight:480)
+    @objc(Disconnect:withRejecter:)
+    func Disconnect(resolve:RCTPromiseResolveBlock, reject: RCTPromiseResolveBlock) -> Void {
+        resolve(true)
+    }
+    
+    @objc(PrintZpl:withResolver:withRejecter:)
+    func PrintZpl(zpl: String, resolve:RCTPromiseResolveBlock, reject: RCTPromiseResolveBlock) -> Void {
+        zplPrinter.setupPrinter(ZPL_ROTATION_180, withmTrack:media_type, withWidth:384, withHeight:480)
         zplPrinter.startPage()
+        
         zplPrinter.setInternationalFont(0)
         
         zplPrinter.printText(ZPL_FONT_A, withOrientation:ZPL_ROTATION_0, withWidth:15, withHeight:12, withPrintX:0, withPrintY:0, withData:"FontA 0123")
@@ -148,9 +139,4 @@ class EhmSewooBt: NSObject, RCTBridgeModule {
         zplPrinter.endPage(1)
     }
     
-    
-  @objc(multiply:withB:withResolver:withRejecter:)
-  func multiply(a: Float, b: Float, resolve:RCTPromiseResolveBlock,reject:RCTPromiseRejectBlock) -> Void {
-    resolve(a*b)
-  }
 }
