@@ -224,10 +224,6 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void PrintZpl(String zpl) throws UnsupportedEncodingException
   {
-    zplPrinter.setupPrinter(ZPLConst.ROTATION_180, ZPLConst.SENSE_GAP, 384, 480);
-
-    zplPrinter.setInternationalFont(0);
-
     RequestQueue.getInstance().addRequest(zpl.getBytes());
   }
 
