@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-<!--
-   Info.plist
-   EhmSewooBt
-
-   Created by Fatih on 4.04.2023.
-   Copyright (c) 2023 Facebook. All rights reserved.
--->
 <plist version="1.0">
-<dict/>
+<dict>
+	<key>UISupportedExternalAccessoryProtocols</key>
+	<array>
+		<string>com.mobileprinter.datapath</string>
+	</array>
+</dict>
 </plist>

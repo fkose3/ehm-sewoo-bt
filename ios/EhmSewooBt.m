@@ -1,28 +1,49 @@
-#import <React/RCTBridgeModule.h>
+#import "EhmSewooBt.h"
 
-@interface RCT_EXTERN_MODULE(EhmSewooBt, NSObject)
+@implementation EhmSewooBt
+RCT_EXPORT_MODULE()
 
-RCT_EXTERN_METHOD(DiscoverDevices:(RCTPromiseResolveBlock)resolve
+RCT_REMAP_METHOD(DiscoverDevices,
+                 withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(StopDiscover:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(ConnectDevice:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(GetDevices:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(Disconnect:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-
-RCT_EXTERN_METHOD(PrintZpl:(NSString*)text withResolver:(RCTPromiseResolveBlock)resolve
-                 withRejecter:(RCTPromiseRejectBlock)reject)
-
-+ (BOOL)requiresMainQueueSetup
 {
-  return NO;
+    resolve(nil);
+}
+
+RCT_REMAP_METHOD(StopDiscover,
+                 withResolver:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+{
+    resolve(nil);
+}
+
+RCT_REMAP_METHOD(ConnectDevice,
+                 withResolver:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+{
+    resolve(nil);
+}
+
+RCT_REMAP_METHOD(GetDevices,
+                 withResolver:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+{
+    resolve(nil);
+}
+
+RCT_REMAP_METHOD(Disconnect,
+                 withResolver:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+{
+    resolve(nil);
+}
+
+RCT_REMAP_METHOD(PrintZpl,
+                 withZpl:(NString*)zpl
+                 withResolver:(RCTPromiseResolveBlock)resolve
+                 withRejecter:(RCTPromiseRejectBlock)reject)
+{
+    resolve(nil);
 }
 
 @end
