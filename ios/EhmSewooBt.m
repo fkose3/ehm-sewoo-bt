@@ -4,7 +4,7 @@
 RCT_EXPORT_MODULE()
 
 -(void)initialize {
-    _zplPrinter = [[ZPLPrinter alloc] init];
+    zplPrinter = [[ZPLPrinter alloc] init];
 }
 
 RCT_EXPORT_METHOD(DiscoverDevices:(RCTPromiseResolveBlock)resolve
@@ -23,7 +23,7 @@ RCT_EXPORT_METHOD(ConnectDevice:(NSString*)deviceId
                   withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    long ret = [_zplPrinter openPort:@"bluetooth" withPortParam:0];
+    long ret = [zplPrinter openPort:@"bluetooth" withPortParam:0];
     
     if(ret >= 0)
     {
@@ -42,7 +42,7 @@ RCT_EXPORT_METHOD(GetDevices:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(Disconnect:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    [_zplPrinter closePort];
+    [zplPrinter closePort];
     [[NSNotificationCenter defaultCenter] removeObserver:self name:EADSessionDataReceivedNotification object:nil];
     resolve(@(TRUE));
 }
@@ -51,7 +51,8 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    [_zplPrinter printString:zpl];
+    [zplPrinter printString:zpl];
+    [zplPrinter printerCheck];
     resolve(@(TRUE));
 }
 
@@ -106,6 +107,12 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
 #ifdef DEBUG
     NSLog(@"===== Status Check EXIT =====");
 #endif
+}
+
+- (void)dealloc
+{
+    [zplPrinter release];
+    [super dealloc];
 }
 
 @end
