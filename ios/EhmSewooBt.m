@@ -19,7 +19,8 @@ RCT_EXPORT_METHOD(StopDiscover:(RCTPromiseResolveBlock)resolve
     resolve(nil);
 }
 
-RCT_EXPORT_METHOD(ConnectDevice:(RCTPromiseResolveBlock)resolve
+RCT_EXPORT_METHOD(ConnectDevice:(NSString*)deviceId
+                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
     long ret = [_zplPrinter openPort:@"bluetooth" withPortParam:0];
