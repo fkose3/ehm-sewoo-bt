@@ -16,7 +16,7 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
-  s.vendored_libraries = ['ios/PrinterLibrary/libPrinter_188b.a']
+  s.vendored_libraries = ['ios/PrinterLibrary/usr/libPrinter_188b.a']
   s.public_header_files = ['ios/PrinterLibrary/usr/*.{h,m,mm}']
   s.frameworks = ['ExternalAccessory']
   s.resources = "ios/Info.plist"
