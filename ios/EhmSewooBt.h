@@ -5,5 +5,6 @@
 
 @interface EhmSewooBt : NSObject <RCTBridgeModule>
 
+    @property (nonatomic, strong) ZPLPrinter* zplPrinter;
 
 @end
