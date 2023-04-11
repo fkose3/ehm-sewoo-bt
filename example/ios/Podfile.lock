@@ -1,7 +1,7 @@
 PODS:
   - boost (1.76.0)
   - DoubleConversion (1.1.6)
-  - ehm-sewoo-bt (1.0.20):
+  - ehm-sewoo-bt (1.0.21):
     - React-Core
   - EXApplication (5.1.1):
     - ExpoModulesCore
@@ -577,7 +577,7 @@ EXTERNAL SOURCES:
 SPEC CHECKSUMS:
   boost: 57d2868c099736d80fcd648bf211b4431e51a558
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
-  ehm-sewoo-bt: 7946c8e219e37b64874ef463cb72ce2e95c5524d
+  ehm-sewoo-bt: 5d4b0326e936d723aec1430d93539f4c62cb7a63
   EXApplication: d8f53a7eee90a870a75656280e8d4b85726ea903
   EXConstants: f348da07e21b23d2b085e270d7b74f282df1a7d9
   EXFileSystem: 844e86ca9b5375486ecc4ef06d3838d5597d895d
