@@ -19,7 +19,7 @@ Pod::Spec.new do |s|
   s.vendored_libraries = ['ios/PrinterLibrary/usr/libPrinter_188b.a']
   s.public_header_files = ['ios/PrinterLibrary/usr/*.{h,m,mm}']
   s.frameworks = ['ExternalAccessory']
-  s.resources = "ios/PrinterProtocols.plist"
+  # s.resources = "ios/PrinterProtocols.plist"
   
   s.dependency "React-Core"
   # Don't install the dependencies when we run `pod install` in the old architecture.

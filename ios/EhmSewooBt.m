@@ -109,10 +109,5 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
 #endif
 }
 
-- (void)dealloc
-{
-    [zplPrinter release];
-    [super dealloc];
-}
 
 @end
