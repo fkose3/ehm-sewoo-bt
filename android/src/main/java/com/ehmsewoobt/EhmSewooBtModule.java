@@ -45,7 +45,7 @@ public class EhmSewooBtModule extends ReactContextBaseJavaModule {
 
   public void Init_WifiSet()
   {
-
+    wifiPort = WiFiPort.getInstance();
     connectDevice = new BroadcastReceiver() {
       @Override
       public void onReceive(Context context, Intent intent) {
