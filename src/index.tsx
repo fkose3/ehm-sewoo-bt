@@ -31,7 +31,10 @@ export type SewooListenerTypes =
   | 'connected'
   | 'connection_failed'
   | 'disconnecting'
-  | 'disconnected';
+  | 'disconnected'
+  | 'battery'
+  | 'paperEmpty'
+  | 'coverOpen';
 export const addListener = (
   listenerType: SewooListenerTypes,
   callback: () => void
@@ -51,6 +54,12 @@ export const addListener = (
       return addDisconnectedListener(callback);
     case 'disconnecting':
       return addDisconnectingListener(callback);
+    case 'paperEmpty':
+      return addPaperEmptyListener(callback);
+    case 'coverOpen':
+      return addCoverOpenListener(callback);
+    case 'battery':
+      return addBatteryLowListener(callback);
   }
 };
 
@@ -60,34 +69,44 @@ const addSearchingStartListener = (
   return DeviceEventEmitter.addListener('Searching_Start', callback);
 };
 
- const addSearchingStopListener = (
-   callback: () => void
- ): EmitterSubscription => {
-   return DeviceEventEmitter.addListener('Searching_Stop', callback);
- };
+const addSearchingStopListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('Searching_Stop', callback);
+};
 
- const addConnectingListener = (callback: () => void): EmitterSubscription => {
-   return DeviceEventEmitter.addListener('connecting', callback);
- };
+const addConnectingListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('connecting', callback);
+};
 
- const addConnectedListener = (callback: () => void): EmitterSubscription => {
-   return DeviceEventEmitter.addListener('connected', callback);
- };
+const addConnectedListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('connected', callback);
+};
 
- const addConnectionFailedListener = (
-   callback: () => void
- ): EmitterSubscription => {
-   return DeviceEventEmitter.addListener('connection_failed', callback);
- };
+const addConnectionFailedListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('connection_failed', callback);
+};
 
- const addDisconnectingListener = (
-   callback: () => void
- ): EmitterSubscription => {
-   return DeviceEventEmitter.addListener('disconnecting', callback);
- };
+const addDisconnectingListener = (
+  callback: () => void
+): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('disconnecting', callback);
+};
 
- const addDisconnectedListener = (
-   callback: () => void
- ): EmitterSubscription => {
-   return DeviceEventEmitter.addListener('disconnected', callback);
- };
+const addDisconnectedListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('disconnected', callback);
+};
+
+const addPaperEmptyListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('paperEmpty', callback);
+};
+
+const addBatteryLowListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('battery', callback);
+};
+
+const addCoverOpenListener = (callback: () => void): EmitterSubscription => {
+  return DeviceEventEmitter.addListener('coverOpen', callback);
+};
