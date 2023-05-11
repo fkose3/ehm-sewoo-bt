@@ -7,6 +7,29 @@ RCT_EXPORT_MODULE()
     zplPrinter = [[ZPLPrinter alloc] init];
 }
 
+- (NSDictionary *)constantsToExport
+{
+    
+    /*
+     EVENT_DEVICE_ALREADY_PAIRED    Emits the devices array already paired
+     EVENT_DEVICE_DISCOVER_DONE    Emits when the scan done
+     EVENT_DEVICE_FOUND    Emits when device found during scan
+     EVENT_CONNECTION_LOST    Emits when device connection lost
+     EVENT_UNABLE_CONNECT    Emits when error occurs while trying to connect device
+     EVENT_CONNECTED    Emits when device connected
+     */
+
+    return @{ @"connecting": @"connecting",
+              @"connected":@"connected",
+              @"disconnecting":@"disconnecting",
+              @"disconnected":@"disconnected",
+              @"paperEmpty":@"paperEmpty",
+              @"coverOpen":@"coverOpen",
+              @"battery":@"battery"
+              };
+}
+
+
 RCT_EXPORT_METHOD(DiscoverDevices:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
@@ -23,12 +46,12 @@ RCT_EXPORT_METHOD(ConnectDevice:(NSString*)deviceId
                   withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    long ret = [zplPrinter openPort:@"bluetooth" withPortParam:0];
-    
+    [self sendEventWithName:@"connecting" body:nil];
+    //long ret = [zplPrinter openPort:@"192.168.43.245", withPortParam:9100];
+    long ret = [zplPrinter openPort:deviceId withPortParam:9100];
     if(ret >= 0)
     {
-        [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(statusCheckReceived:) name:EADSessionDataReceivedNotification object:nil];
-        [[EAAccessoryManager sharedAccessoryManager] registerForLocalNotifications];
+        [self sendEventWithName:@"connected" body:nil];
     }
     resolve((@TRUE));
 }
@@ -42,8 +65,9 @@ RCT_EXPORT_METHOD(GetDevices:(RCTPromiseResolveBlock)resolve
 RCT_EXPORT_METHOD(Disconnect:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
+    [self sendEventWithName:@"disconnecting" body:nil];
     [zplPrinter closePort];
-    [[NSNotificationCenter defaultCenter] removeObserver:self name:EADSessionDataReceivedNotification object:nil];
+    [self sendEventWithName:@"disconnected" body:nil];
     resolve(@(TRUE));
 }
 
@@ -53,9 +77,33 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
 {
     [zplPrinter printString:zpl];
     [zplPrinter printerCheck];
+    
+    long sts = [zplPrinter status];
+    [self tcpStatusBox:sts];
     resolve(@(TRUE));
 }
 
+- (void) tcpStatusBox:(long) sts
+{
+    sts = [zplPrinter status];
+    if(sts == STS_ZPL_NORMAL)
+    {
+        
+    } else {
+       if((sts & STS_ZPL_PAPER_EMPTY) > 0)
+       {
+           [self sendEventWithName:@"paperEmpty" body:nil];
+       }
+        if((sts & STS_ZPL_COVER_OPEN) > 0)
+        {
+            [self sendEventWithName:@"coverOpen" body:nil];
+        }
+        if((sts & STS_ZPL_BATTERY_LOW) > 0)
+        {
+            [self sendEventWithName:@"battery" body:nil];
+        }
+    }
+}
 - (void) statusCheckReceived:(NSNotification *) notification
 {
     long bytesAvailable = 0;
