@@ -1,7 +1,7 @@
 import {
   NativeModules,
-  DeviceEventEmitter,
   EmitterSubscription,
+  NativeEventEmitter,
 } from 'react-native';
 
 export type Device = {
@@ -63,50 +63,51 @@ export const addListener = (
   }
 };
 
+var emitter = new NativeEventEmitter(NativeModules.EhmSewooBt);
 const addSearchingStartListener = (
   callback: () => void
 ): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('Searching_Start', callback);
+  return emitter.addListener('Searching_Start', callback);
 };
 
 const addSearchingStopListener = (
   callback: () => void
 ): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('Searching_Stop', callback);
+  return emitter.addListener('Searching_Stop', callback);
 };
 
 const addConnectingListener = (callback: () => void): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('connecting', callback);
+  return emitter.addListener('connecting', callback);
 };
 
 const addConnectedListener = (callback: () => void): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('connected', callback);
+  return emitter.addListener('connected', callback);
 };
 
 const addConnectionFailedListener = (
   callback: () => void
 ): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('connection_failed', callback);
+  return emitter.addListener('connection_failed', callback);
 };
 
 const addDisconnectingListener = (
   callback: () => void
 ): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('disconnecting', callback);
+  return emitter.addListener('disconnecting', callback);
 };
 
 const addDisconnectedListener = (callback: () => void): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('disconnected', callback);
+  return emitter.addListener('disconnected', callback);
 };
 
 const addPaperEmptyListener = (callback: () => void): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('paperEmpty', callback);
+  return emitter.addListener('paperEmpty', callback);
 };
 
 const addBatteryLowListener = (callback: () => void): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('battery', callback);
+  return emitter.addListener('battery', callback);
 };
 
 const addCoverOpenListener = (callback: () => void): EmitterSubscription => {
-  return DeviceEventEmitter.addListener('coverOpen', callback);
+  return emitter.addListener('coverOpen', callback);
 };
