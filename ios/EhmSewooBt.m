@@ -75,12 +75,19 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
                  withResolver:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
-    [zplPrinter printString:zpl];
-    [zplPrinter printerCheck];
-    
-    long sts = [zplPrinter status];
-    [self tcpStatusBox:sts];
-    resolve(@(TRUE));
+    @try {
+        [zplPrinter printString:zpl];
+        [zplPrinter printerCheck];
+        
+        long sts = [zplPrinter status];
+        [self tcpStatusBox:sts];
+        resolve(@(TRUE));
+    } @catch (NSException *exception)
+    {
+        [self sendEventWithName:@"disconnecting" body:nil];
+        [zplPrinter closePort];
+        [self sendEventWithName:@"disconnected" body:nil];
+    }
 }
 
 - (void) tcpStatusBox:(long) sts
@@ -102,6 +109,9 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
         {
             [self sendEventWithName:@"battery" body:nil];
         }
+        [self sendEventWithName:@"disconnecting" body:nil];
+        [zplPrinter closePort];
+        [self sendEventWithName:@"disconnected" body:nil];
     }
 }
 - (void) statusCheckReceived:(NSNotification *) notification
