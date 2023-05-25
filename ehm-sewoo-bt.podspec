@@ -16,9 +16,8 @@ Pod::Spec.new do |s|
 
   s.source_files = "ios/**/*.{h,m,mm,swift}"
 
-  if ENV['RCT_NO_SIMULATOR_BUILD'] == '1' then
+  
     s.vendored_libraries = ['ios/PrinterLibrary/usr/libPrinter_188b.a']
-  end
   
   s.public_header_files = ['ios/PrinterLibrary/usr/*.{h,m,mm}']
   s.frameworks = ['ExternalAccessory']
