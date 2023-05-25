@@ -22,7 +22,7 @@ Pod::Spec.new do |s|
   s.public_header_files = ['ios/PrinterLibrary/usr/*.{h,m,mm}']
   s.frameworks = ['ExternalAccessory']
   # s.resources = "ios/PrinterProtocols.plist"
-  s.pod_target_xcconfig = { 'ENABLE_BITCODE' => 'YES' }
+  s.pod_target_xcconfig = { 'ENABLE_BITCODE' => 'YES',"EXCLUDED_ARCHS[sdk=iphonesimulator*]" => "arm64" }
 
   s.dependency "React-Core"
   # Don't install the dependencies when we run `pod install` in the old architecture.
