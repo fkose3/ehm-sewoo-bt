@@ -29,6 +29,25 @@ RCT_EXPORT_MODULE()
               };
 }
 
+- (NSArray<NSString *> *)supportedEvents
+{
+    /*
+     EVENT_DEVICE_ALREADY_PAIRED    Emits the devices array already paired
+     EVENT_DEVICE_DISCOVER_DONE    Emits when the scan done
+     EVENT_DEVICE_FOUND    Emits when device found during scan
+     EVENT_CONNECTION_LOST    Emits when device connection lost
+     EVENT_UNABLE_CONNECT    Emits when error occurs while trying to connect device
+     EVENT_CONNECTED    Emits when device connected
+     */
+
+    return @[@"connecting",
+             @"connected",
+             @"disconnecting",
+             @"disconnected",
+             @"paperEmpty",
+             @"coverOpen",
+             @"battery"];
+}
 
 RCT_EXPORT_METHOD(DiscoverDevices:(RCTPromiseResolveBlock)resolve
                  withRejecter:(RCTPromiseRejectBlock)reject)
