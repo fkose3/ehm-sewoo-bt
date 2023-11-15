@@ -95,6 +95,12 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
     @try {
+        if(!zplPrinter)
+        {
+            zplPrinter = [[ZPLPrinter alloc] init];
+            resolve(@(FALSE));
+            return;
+        }
         [zplPrinter printString:zpl];
         [zplPrinter printerCheck];
         
@@ -104,8 +110,14 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
     } @catch (NSException *exception)
     {
         [self sendEventWithName:@"disconnecting" body:nil];
-        [zplPrinter closePort];
+
+        if(!zplPrinter)
+        {
+            [zplPrinter closePort];
+        }
+        
         [self sendEventWithName:@"disconnected" body:nil];
+        resolve(@(FALSE));
     }
 }
 
