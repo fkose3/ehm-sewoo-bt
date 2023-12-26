@@ -95,18 +95,18 @@ RCT_EXPORT_METHOD(PrintZpl:(NSString*)zpl
                  withRejecter:(RCTPromiseRejectBlock)reject)
 {
     @try {
-        if(!zplPrinter)
-        {
-            zplPrinter = [[ZPLPrinter alloc] init];
+        if(zplPrinter == nil){
+            [self sendEventWithName:@"disconnecting" body:nil];
             resolve(@(FALSE));
-            return;
+        }else {
+            
+            NSData *data = [zpl dataUsingEncoding:NSUTF8StringEncoding];
+            const unsigned char *bytes = (const unsigned char *)[data bytes];
+            NSUInteger length = [data length];
+            [zplPrinter printData:bytes withLength:length];
+            
+            resolve(@(TRUE));
         }
-        [zplPrinter printString:zpl];
-        [zplPrinter printerCheck];
-        
-        long sts = [zplPrinter status];
-        [self tcpStatusBox:sts];
-        resolve(@(TRUE));
     } @catch (NSException *exception)
     {
         [self sendEventWithName:@"disconnecting" body:nil];
