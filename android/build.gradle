@@ -31,7 +31,7 @@ def getExtOrIntegerDefault(name) {
 }
 
 android {
-  compileSdkVersion 29
+  compileSdkVersion 30
   defaultConfig {
     minSdkVersion 16
     targetSdkVersion 33
